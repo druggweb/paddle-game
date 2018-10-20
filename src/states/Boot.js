@@ -6,7 +6,7 @@ import config from '../config'
 
 export default class extends Phaser.State {
   init () {
-    this.stage.backgroundColor = '#e1f5fe'
+    this.stage.backgroundColor = '#fafafa'
     this.fontsReady = false
     this.fontsLoaded = this.fontsLoaded.bind(this)
   }
