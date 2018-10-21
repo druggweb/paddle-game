@@ -18,6 +18,19 @@ export default class extends Phaser.State {
     this.setUpBricks()
     this.setUpPaddle()
     this.setUpBall()
+
+    this.game.input.onDown.add(this.releaseBall, this)
+  }
+
+  releaseBall () {
+    if (!this.ballOnPaddle) {
+      return
+    }
+
+    this.ballOnPaddle = false
+
+    this.ball.body.velocity.x = -20
+    this.ball.body.velocity.y = -300
   }
 
   setUpBall () {
