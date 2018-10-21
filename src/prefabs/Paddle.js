@@ -12,7 +12,20 @@ class Paddle extends Phaser.Sprite {
   }
 
   update () {
-    //
+    if (this.game.input.x === 0) {
+      return
+    }
+
+    this.x = this.game.input.x
+
+    if (this.x < this.width / 2) {
+      this.x = this.width / 2
+      return
+    }
+
+    if (this.x > this.game.width - this.width / 2) {
+      this.x = this.game.width - this.width / 2
+    }
   }
 }
 
