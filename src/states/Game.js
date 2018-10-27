@@ -14,6 +14,8 @@ export default class extends Phaser.State {
   preload () {}
 
   create () {
+    this.game.physics.arcade.checkCollision.down = false
+
     this.setUpText()
     this.setUpBricks()
     this.setUpPaddle()
@@ -37,7 +39,26 @@ export default class extends Phaser.State {
     this.ball = new Ball(this.game)
     this.game.add.existing(this.ball)
 
+    this.ball.events.onOutOfBounds.add(this.ballLost, this)
+
     this.putBallOnPaddle()
+  }
+
+  ballLost () {
+    --this.game.global.lives
+
+    if (this.game.global.lives === 0) {
+      this.endGame()
+      return
+    }
+
+    this.livesText.text = `Lives: ${this.game.global.lives}`
+
+    this.putBallOnPaddle()
+  }
+
+  endGame () {
+    this.game.state.start('Gameover')
   }
 
   putBallOnPaddle () {
@@ -84,9 +105,9 @@ export default class extends Phaser.State {
   }
 
   setUpText () {
-    this.createText(20, 20, 'left', `Score: ${this.game.global.score}`)
-    this.createText(0, 20, 'center', `Lives: ${this.game.global.lives}`)
-    this.createText(-20, 20, 'right', `Level: ${this.game.global.level}`)
+    this.scoreText = this.createText(20, 20, 'left', `Score: ${this.game.global.score}`)
+    this.livesText = this.createText(0, 20, 'center', `Lives: ${this.game.global.lives}`)
+    this.levelText = this.createText(-20, 20, 'right', `Level: ${this.game.global.level}`)
   }
 
   createText (xOffset, yOffset, align, text) {
@@ -105,6 +126,54 @@ export default class extends Phaser.State {
     if (this.ballOnPaddle) {
       this.ball.body.x = this.paddle.x - (this.ball.width / 2)
     }
+
+    this.game.physics.arcade.collide(
+      this.ball,
+      this.paddle,
+      this.ballHitPaddle,
+      null,
+      this
+    )
+
+    this.game.physics.arcade.collide(
+      this.ball,
+      this.bricks,
+      this.ballHitBrick,
+      null,
+      this
+    )
+  }
+
+  ballHitPaddle (ball, paddle) {
+    let diff = 0
+
+    if (ball.x < paddle.x) {
+      diff = paddle.x - ball.x
+      ball.body.velocity.x = (-10 * diff)
+      return
+    }
+
+    if (ball.x > paddle.x) {
+      diff = ball.x - paddle.x
+      ball.body.velocity.x = (10 * diff)
+    }
+  }
+
+  ballHitBrick (ball, brick) {
+    brick.kill()
+
+    this.game.global.score += 10
+    this.scoreText.text = `Score: ${this.game.global.score}`
+
+    if (this.bricks.countLiving() > 0) {
+      return
+    }
+
+    this.game.global.level += 1
+    this.levelText.text = `Level: ${this.game.global.level}`
+
+    this.putBallOnPaddle()
+    this.generateBricks(this.bricks)
   }
 
   render () {}
